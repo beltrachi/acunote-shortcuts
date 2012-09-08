@@ -1,4 +1,5 @@
-#!/bin/ruby
+#!/usr/bin/env ruby
+# Script to create greasemonkey and firefox addon based on sources in lib folder
 
 require "erb"
 
@@ -7,30 +8,6 @@ GM_PATH="greasemonkey/"
 RAILS_PATH="rails/plugin/"
 EXTENSION_PATH="extension/"
 TEMPLATES_PATH="lib/templates/"
-
-# TODO: deprecate this methods!!
-
-module Tools
-  # Removes old contents and sets this
-  def init_file ( from, to)
-    dst = File.join( $dst_folder_ctx, to)
-    `cp -f #{from} #{dst}`
-  end
-
-  # Appends content to this file.
-  def append_file( from, to)
-    dst = File.join( $dst_folder_ctx, to)
-    `cat #{from} >> #{dst}`
-  end
-
-  # To write in the same dest folder
-  def dest_folder_ctx path
-    old, $dest_folder_ctx = $dest_folder_ctx, path
-    yield
-  ensure
-    $dest_folder_ctx = old
-  end
-end
 
 version = File.open("VERSION").read
 acunote_shortcuts = File.open(File.join(SRC_PATH,"acunote-shortcuts.js")).read
@@ -52,17 +29,29 @@ end
 order = [
   "reddit",
   "hn",
+  "ycombinator",
   "digg",
   "dummy",
   "redmine"
 ]
 sites.sort! do |a,b|
-  order.index(a[:name]) <=> order.index(b[:name])
+  (order.index(a[:name])||order.size) <=> (order.index(b[:name])||order.size)
 end
 
-# Mapping of source files
-# Greasemonkey
+# Generate greasemonkey
+
 dest = File.join( GM_PATH, "acunote-shortcuts.user.js")
 File.open( dest, "w" ) do |out|
   out.write(render("acunote-shortcuts.user.js"))
 end
+
+# Generate firefox extension
+
+dest = File.join( EXTENSION_PATH, "src", "content", "overlay.js")
+File.open( dest, "w" ) do |out|
+  out.write(render("overlay.js"))
+end
+
+puts "Building firefox extension xpi..."
+system("cd #{EXTENSION_PATH}/src; zip -r ../acunote-shortcuts.xpi *")
+puts "Extension successfully created"
