@@ -5,12 +5,13 @@ require "erb"
 
 SRC_PATH="lib/"
 GM_PATH="greasemonkey/"
-RAILS_PATH="rails/plugin/"
+RAILS_PATH="rails/plugin/acunote_shortcuts/"
 EXTENSION_PATH="extension/"
 TEMPLATES_PATH="lib/templates/"
 
 version = File.open("VERSION").read
 acunote_shortcuts = File.open(File.join(SRC_PATH,"acunote-shortcuts.js")).read
+acunote_shortcuts_css = File.open(File.join(SRC_PATH,"acunote-shortcuts.css")).read
 sites = Dir[File.join(SRC_PATH, "sites","*.js")].map do |file|
   {
     :name => File.basename(file, ".js"),
@@ -60,3 +61,15 @@ end
 puts "Building firefox extension xpi..."
 system("cd #{EXTENSION_PATH}/src; zip -r ../acunote-shortcuts.xpi *")
 puts "Extension successfully created"
+
+# Update rails plugin files
+
+dest = File.join( RAILS_PATH, "assets", "javascripts", "acunote-shortcuts.js")
+File.open( dest, "w" ) do |out|
+  out.write(acunote_shortcuts)
+end
+
+dest = File.join( RAILS_PATH, "assets", "stylesheets", "acunote-shortcuts.css")
+File.open( dest, "w" ) do |out|
+  out.write(acunote_shortcuts_css)
+end
