@@ -1,5 +1,6 @@
 /*
  *  Acunote Shortcuts.
+ *  Version 0.3
  *
  *  Acunote Shortcuts is based on Javascript Keyboard Shortcuts library 
  *  extracted from Acunote
@@ -344,6 +345,17 @@ function ShortcutsSource() {
     
 }
 
+/*
+ *  ===========================================================
+ *  Shortcuts Library: Supported Sites
+ *  This script matches site URL against the
+ *  property name and gets the source of the function
+ *  specified as property value.
+ *  Each site adds itself to this hash.
+ *  ===========================================================
+ */
+var SupportedSites = {};
+
 
 /*
  *  ===========================================================
@@ -581,6 +593,8 @@ function RedditSource() {
     }
 }
 
+SupportedSites['reddit.com/'] = RedditSource;
+
 /*
  *  ===========================================================
  *  Acunote Shortcuts: Hacker News Support
@@ -804,218 +818,7 @@ function HnSource() {
     }
 }
 
-
-/*
- *  ===========================================================
- *  Acunote Shortcuts: YCNews Support
- *  Copyright (c) 2008 Pluron, Inc.
- *  ===========================================================
- *  
- *  TODO: unify ycombinator.js with hn.js
- */
-function YCombinatorSource() {
-    var YCCursorImageData = "data:image/png,%89PNG%0D%0A%1A%0A%00%00%00%0DIHDR%00%00%00%09%00%00%00%0B%08%06%00%00%00%ADY%A7%1B%00%00%00%06bKGD%00%FF%00%FF%00%FF%A0%BD%A7%93%00%00%00%09pHYs%00%00%0D%3A%00%00%0D%3A%01%03%22%1E%85%00%00%00%07tIME%07%D6%0B%10%090%06%16%8E%9BU%00%00%00%1DtEXtComment%00Created%20with%20The%20GIMP%EFd%25n%00%00%00PIDAT%18%D3%8D%D0%A1%0E%C0%20%0C%84%E1%BF%E7%B0(%DE%FF%E9PXd%A7XH%B7%95%9Dl%BE%E6%9A%1A%E0l%E9c%1A!%8A%C3V%8B%3F%D0%DBv%84%FA%AA%D9%A1%B2%7B%16%14%87%B4Z%FC%88%FA%98%A6%EC%E0U%AF%13%B8Q%06%00%EC%CF%C7%2F%C8T'%AFF%81S%0A%00%00%00%00IEND%AEB%60%82"
-
-    var YCCursorStyles = 
-        '#shortcut_status { background: #f00;color: #fff;padding: 5px;position: absolute;top: 10px;right: 10px;}\n'+
-        '.cursor {position:absolute; margin-top: 4px;}';
-
-
-    var YCCursorHelp =
-                '=== Cursor Movement ===\n' +
-                'j - move cursor up\n' +
-                'k - move cursor down\n' +
-                '\n=== Post Management ===\n' +
-                'o, <Enter> - open original post\n'+
-                '<Shift>+o - open comments\n' +
-                'u - back to news list\n' +
-                '\n=== Voting ===\n' +
-                'v u - vote up\n' +
-                '\n=== Browsing ===\n' +
-                'g i - open "index" page\n' +
-                'g n - open "newest" page\n' +
-                '\n=== Other ===\n' +
-                '? - this help\n';
-
-
-    var Cursor = {
-
-        cursors: 0,
-        current: 0,
-        nextPageUrl: null,
-
-        init: function() {
-            this.addStyles(YCCursorStyles);
-            var table = document.getElementsByTagName('table')[2];
-            if (!table) return false;
-            var cursorLeft = this.findPosX(table) - 15;
-            var rows = table.tBodies[0].rows;
-            if (rows.length == 0) return false;
-            var j = 0;
-            for(var i=0; i<rows.length;i++) {
-                var row = rows[i];
-                if (row.cells[0] && row.cells[0].className == 'title') {
-                    j++;
-                    // set id on post link
-                    var link = row.cells[2].getElementsByTagName('a')[0];
-                    link.setAttribute('id', 'post_link_'+j);
-                    // set id on vote td
-                    var voteCell = rows[i].cells[1];
-                    if (voteCell) voteCell.setAttribute('id', 'vote_'+j);
-                    // Create cursor
-                    var cell = rows[i].cells[0];
-                    var img = document.createElement('img');
-                    img.className = "cursor";
-                    img.src = YCCursorImageData;
-                    img.style.display = 'none';
-                    img.style.left = cursorLeft + 'px';
-                    img.setAttribute('id', 'cursor_'+j);
-                    cell.insertBefore(img, cell.firstChild);
-                    // set id on author link
-                    var authorLink = rows[i+1].getElementsByTagName('a')[0];
-                    if (authorLink) authorLink.setAttribute('id', 'author_link_'+j);
-                    // set id on comments link
-                    var commentLink = rows[i+1].getElementsByTagName('a')[1];
-                    if (commentLink) commentLink.setAttribute('id', 'comment_link_'+j);
-                }
-                // Try to gen link to the next page
-                if ((i == rows.length-1)) {
-                    var a = rows[i].getElementsByTagName('a')[0];
-                    if (a && a.innerHTML == "More") {
-                        this.nextPageUrl = a.getAttribute('href');
-                    }
-                }
-            }
-            this.cursors = j;
-            this.current = 1;
-            this.showCursor(this.current);
-            shortcutListener.init();
-        },
-
-        next: function() {
-            var i = this.current + 1;
-            if (i > this.cursors) {
-                if (!this.nextPageUrl) return false;
-                location.href = this.nextPageUrl;
-            }
-            this.showCursor(i);
-        },
-
-        previous: function() {
-            var i = this.current - 1;
-            if (i < 1) return false;    
-            this.showCursor(i);
-        },
-
-        showCursor: function(i) {
-            if (i<=0) return false;
-            this.hideCursor(this.current);
-            var c = document.getElementById('cursor_'+i);
-            if (!c) return false;
-            c.style.display = '';
-            this.current = i;
-
-            var offset = window.pageYOffset;
-            var innerHeight = window.innerHeight;
-            var cursorPos = this.findPosY(c);
-            if ( (cursorPos < (offset + 30)) || (cursorPos > (offset+innerHeight-30))) {
-                window.scrollTo(0, cursorPos - (innerHeight/2))
-            }
-
-            document.getElementById('post_link_'+i).focus();
-
-        },
-
-        hideCursor: function(i) {
-            var c = document.getElementById('cursor_'+i);
-            if (!c) return false;
-            c.style.display = 'none';
-        },
-
-        jump: function(where) {
-            var linkId = where + '_link_';
-            var a = document.getElementById(linkId+this.current);
-            if (a) location.href = a.getAttribute('href');
-        },
-
-        vote: function() {
-            var cell = document.getElementById('vote_'+this.current);
-            var links = cell.getElementsByTagName('a');
-            for(var i=0; i<links.length;i++) {
-                var a = links[i];
-                if (a.getAttribute('id').match('up')) {
-                    if (a.getAttribute('onclick')) {
-                        vote(a);
-                    } else {
-                        location.href = a.getAttribute('href');
-                    }
-                }
-            }
-        },
-
-        back: function() {
-            if (location.href.match('item')) history.back();
-        },
-
-        help: function() {
-            alert(YCCursorHelp);
-        },
-
-        findPosY: function (obj) {
-            if (!obj) return 0;
-            var curtop = 0;
-            if (obj.offsetParent) {
-                curtop = obj.offsetTop;
-                while (obj = obj.offsetParent) {
-                    curtop += obj.offsetTop;
-                }
-            }
-            return curtop;
-        },
-
-        findPosX: function (obj) {
-            if (!obj) return 0;
-            var curleft = 0;
-            if (obj.offsetParent) {
-                curleft = obj.offsetLeft;
-                while (obj = obj.offsetParent) {
-                    curleft += obj.offsetLeft;
-                }
-            }
-            return curleft;
-        },
-
-        addStyles: function(css) {
-            var head, style, text;
-            head = document.getElementsByTagName('head')[0];
-            if (!head) { return; }
-            style = document.createElement('style');
-            style.type = 'text/css';
-            text = document.createTextNode(css);
-            style.appendChild(text);
-            head.appendChild(style);
-        }
-
-    }
-
-
-    var SHORTCUTS = {
-        '?': function() { Cursor.help(); },
-        'h': function() { Cursor.help(); },
-        'j': function() { Cursor.next();},
-        'k': function() { Cursor.previous();},
-        'O': function() { Cursor.jump('comment');},
-        'o': function() { Cursor.jump('post');},
-        'v': {
-            'u': function() { Cursor.vote();}
-        },
-        'u': function() { Cursor.back();},
-        'g': {
-            'i': function() { location.href = '/'; },
-            'n': function() { location.href = '/newest'; }
-        }
-    }
-}
+SupportedSites['ycombinator'] = HnSource;
 
 /*
  *  ===========================================================
@@ -1301,6 +1104,7 @@ function DiggSource() {
     }
 }
 
+SupportedSites['digg.com/'] = DiggSource;
 
 // Please add your scripts here. Copy and paste the dummy script definition
 // and modify it to your needs.
@@ -1331,6 +1135,7 @@ function DummySource() {
     }
 }
 
+SupportedSites['example.com/'] = DummySource;
 
 /*
  *  ===========================================================
@@ -1551,25 +1356,25 @@ function RedmineSource() {
     };
 }
 
+SupportedSites['redmine.org'] = RedmineSource;
 
-
-
-/*
- *  ===========================================================
- *  Shortcuts Library: Supported Sites
- *  This script matches site URL against the
- *  property name and gets the source of the function
- *  specified as property value.
- *  ===========================================================
- */
-var SupportedSites = {
-    'news.ycombinator.com/': YCombinatorSource,
-    'news.ycombinator.org/': YCombinatorSource,
-    'reddit.com/':           RedditSource,
-    'digg.com/':             DiggSource,
-    'example.com/':          DummySource
+// Allow any domain hosting a redmine instance to use it
+// You need to allow this userscript on the domain. 
+// In firefox you configure the script in the user config.
+// Dirty hack search for the description metatag.
+try{
+    var item, list = document.getElementsByTagName("meta");
+    for(var i = 0;i < list.length; i++){
+        item = list[i];
+        if( item.getAttribute("name") == "description" && 
+                item.getAttribute("content") == "Redmine"){
+            SupportedSites[location.hostname] = RedmineSource;
+            break;
+        }
+    }
+}catch(e){
+    if(console) console.error(e);
 }
-
 
 
 

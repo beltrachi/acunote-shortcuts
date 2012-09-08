@@ -39,9 +39,6 @@ function ShortcutsSource() {
 <%= site[:code] %>
 <% end %>
 
-// TODO: move the SupportedSites to a var or ShortcutsSource attribute and each
-// service has to register there like ShortcutsSource.registerSite(name,code)
-
 /*
  *  ===========================================================
  *  Shortcuts Library: Supported Sites
@@ -50,33 +47,7 @@ function ShortcutsSource() {
  *  specified as property value.
  *  ===========================================================
  */
-var SupportedSites = {
-    'ycombinator':      HnSource,
-    'reddit':           RedditSource,
-    'digg':             DiggSource,
-    'redmine.org':      RedmineSource,
-    'example.com':      DummySource
-}
-
-// TODO: move this code to redmine file
-
-//Allow any domain hosting a redmine instance to use it
-// You need to allow this userscript on the domain. 
-// In firefox you configure the script in the user config.
-// Dirty hack search for the description metatag.
-try{
-    var item, list = document.getElementsByTagName("meta");
-    for(var i = 0;i < list.length; i++){
-        item = list[i];
-        if( item.getAttribute("name") == "description" && 
-                item.getAttribute("content") == "Redmine"){
-            SupportedSites[location.hostname] = RedmineSource;
-            break;
-        }
-    }
-}catch(e){
-    if(console) console.error(e);
-}
+var SupportedSites = {};
 
 /*
  *  ===========================================================

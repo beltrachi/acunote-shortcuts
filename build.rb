@@ -52,6 +52,11 @@ File.open( dest, "w" ) do |out|
   out.write(render("overlay.js"))
 end
 
+dest = File.join( EXTENSION_PATH, "src", "install.rdf")
+File.open( dest, "w" ) do |out|
+  out.write(render("install.rdf"))
+end
+
 puts "Building firefox extension xpi..."
 system("cd #{EXTENSION_PATH}/src; zip -r ../acunote-shortcuts.xpi *")
 puts "Extension successfully created"

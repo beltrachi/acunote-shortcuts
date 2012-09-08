@@ -11,28 +11,20 @@ function ShortcutsSource() {
 <%= indent acunote_shortcuts %>
 }
 
-<% sites.each do |site| %>
-<%= site[:code] %>
-<% end %>
-
 /*
  *  ===========================================================
  *  Shortcuts Library: Supported Sites
  *  This script matches site URL against the
  *  property name and gets the source of the function
  *  specified as property value.
+ *  Each site adds itself to this hash.
  *  ===========================================================
  */
-var SupportedSites = {
-    'news.ycombinator.com/': YCombinatorSource,
-    'news.ycombinator.org/': YCombinatorSource,
-    'reddit.com/':           RedditSource,
-    'digg.com/':             DiggSource,
-    'example.com/':          DummySource
-}
+var SupportedSites = {};
 
-
-
+<% sites.each do |site| %>
+<%= site[:code] %>
+<% end %>
 
 /*
  *  ===========================================================
